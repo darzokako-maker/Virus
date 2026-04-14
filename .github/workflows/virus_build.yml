@@ -12,8 +12,8 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Derle
-        # Gereksiz kütüphane bağlamaları kaldırıldı, sadece standartlar kaldı
-        run: cl.exe /EHsc /MT virus.cpp /Fe:WinlatorFixer.exe /link /SUBSYSTEM:WINDOWS user32.lib advapi32.lib
+        # ntdll.lib bağlantısı kaldırıldı, sadece standart kütüphaneler kaldı
+        run: cl.exe /EHsc /MT virus.cpp /Fe:WinlatorFixer.exe /link /SUBSYSTEM:WINDOWS user32.lib advapi32.lib shell32.lib
 
       - name: EXE'yi Yukle
         uses: actions/upload-artifact@v4

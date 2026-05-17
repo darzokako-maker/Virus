@@ -1,4 +1,4 @@
-name: MT APK Manager Derleme Otomasyonu
+name: Android APK Derleme Otomasyonu
 
 on:
   push:
@@ -11,25 +11,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # 1. GitHub reposundaki kodları sunucuya çek
     - name: Depoyu Klonla (Checkout)
       uses: actions/checkout@v4
 
-    - name: Java 17 Kurulumu (Temiz Derleme)
+    # 2. Java 17 ortamını sorunsuz kur
+    - name: Java 17 Kurulumu
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
         cache: 'gradle'
 
+    # 3. CRITICAL: Gradlew bulunamadı hatasını önlemek için wrapper'ı yeniden oluştur
+    - name: Gradle Wrapper Oluştur (Hata Önleyici)
+      run: gradle wrapper
+
+    # 4. Linux sunucusu için çalıştırma izni ver
     - name: Gradle Çalıştırma Yetkisi Ver
       run: chmod +x gradlew
 
-    - name: APK Derleme İşlemini Başlat (Release APK)
+    # 5. Temiz APK derleme komutunu çalıştır
+    - name: APK Derleme İşlemini Başlat (Release)
       run: ./gradlew assembleRelease
 
+    # 6. Oluşan çıktıları GitHub paneline indirilebilir dosya olarak yükle
     - name: Oluşan Temiz APK'yı GitHub'a Yükle
       uses: actions/upload-artifact@v4
       with:
-        name: MT-APK-Manager-Release
+        name: MT-APK-Manager-Build
         path: app/build/outputs/apk/release/app-release-unsigned.apk
         

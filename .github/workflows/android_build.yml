@@ -1,0 +1,35 @@
+name: MT APK Manager Derleme Otomasyonu
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Depoyu Klonla (Checkout)
+      uses: actions/checkout@v4
+
+    - name: Java 17 Kurulumu (Temiz Derleme)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        cache: 'gradle'
+
+    - name: Gradle Çalıştırma Yetkisi Ver
+      run: chmod +x gradlew
+
+    - name: APK Derleme İşlemini Başlat (Release APK)
+      run: ./gradlew assembleRelease
+
+    - name: Oluşan Temiz APK'yı GitHub'a Yükle
+      uses: actions/upload-artifact@v4
+      with:
+        name: MT-APK-Manager-Release
+        path: app/build/outputs/apk/release/app-release-unsigned.apk
+        
